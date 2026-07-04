@@ -1,0 +1,39 @@
+name: Pipeline CI/CD Web Sederhana
+
+# 1. TRIGGER: Kapan pipeline ini dijalankan?
+on:
+  push:
+    branches:
+      - main # Berjalan otomatis setiap ada push ke branch 'main'
+
+# 2. JOBS: Apa saja tugas yang harus dilakukan?
+jobs:
+  # Tahap Continuous Integration (CI)
+  testing:
+    name: Menjalankan Testing (CI)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mengambil kode dari repository (Checkout)
+        uses: actions/checkout@v4
+
+      - name: Menjalankan file test.sh
+        run: |
+          chmod +x test.sh
+          ./test.sh
+
+  # Tahap Continuous Deployment (CD)
+  deployment:
+    name: Merilis ke GitHub Pages (CD)
+    needs: testing # CD HANYA berjalan jika job 'testing' sukses
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Mengambil kode dari repository (Checkout)
+        uses: actions/checkout@v4
+
+      - name: Deploy ke GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./ # Mengunggah semua file di folder utama
